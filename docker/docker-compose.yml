@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+
+    jhub:
+        image: bitnik/ilcm:jhub
+        deploy:
+          replicas: 3
+          restart_policy:
+              condition: on-failure
+          resources:
+              limits:
+                  cpus: "0.5"
+                  memory: 10G
+        restart: always
+        command: start-jhub.sh 'jupyterhub_config_docker.py'
+        expose:
+            - "8000"
+        networks:
+            - webnet
+
+    nginx-shibboleth:
+        depends_on:
+            - jhub
+        image: bitnik/ilcm:nginx_shibboleth
+        deploy:
+          replicas: 2
+          restart_policy:
+              condition: on-failure
+          resources:
+              limits:
+                  cpus: "0.2"
+                  memory: 1G
+        volumes:
+            - /etc/shibboleth:/etc/shibboleth
+            - ~/ilcm/shibboleth/embedded_discovery_service:/home/shibboleth/embedded_discovery_service
+            - /etc/nginx/conf.d/jhub_nginx_test_docker.conf:/etc/nginx/conf.d/jhub_nginx_test_docker.conf
+            - /etc/letsencrypt:/etc/letsencrypt
+            - /etc/ssl:/etc/ssl
+            - /etc/nginx/.htpasswd:/etc/nginx/.htpasswd
+        ports:
+            - "80:80"
+            - "443:443"
+        restart: always
+        command: /usr/bin/supervisord --nodaemon --configuration /etc/supervisor/supervisord.conf
+        networks:
+            - webnet
+    visualizer:
+        image: dockersamples/visualizer:stable
+        ports:
+          - "8080:8080"
+        volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+        deploy:
+          placement:
+            constraints: [node.role == manager]
+        networks:
+          - webnet
+networks:
+  webnet:
