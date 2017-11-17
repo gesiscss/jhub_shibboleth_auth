@@ -3,7 +3,7 @@ version: '3'
 services:
 
     jhub:
-        image: bitnik/ilcm:jhub
+        image: bitnik/jhub:v0.1
         deploy:
           replicas: 3
           restart_policy:
@@ -22,7 +22,7 @@ services:
     nginx-shibboleth:
         depends_on:
             - jhub
-        image: bitnik/ilcm:nginx_shibboleth
+        image: bitnik/nginx_shibboleth:v0.1
         deploy:
           replicas: 2
           restart_policy:
