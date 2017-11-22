@@ -14,6 +14,12 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         # eppn = self.request.headers.get(self.authenticator.eppn, "")
         # email_addres = self.request.headers.get(self.authenticator.email, "")
         persistent_id = self.request.headers.get(self.authenticator.persistent_id, "")
+        # NOTE: The Persistent ID is a triple with the format:
+        # <name for the source of the identifier>!
+        # <name for the intended audience of the identifier >!
+        # <opaque identifier for the principal >
+        parts = persistent_id.split('!')
+        persistent_id = '{}!{}'.format(parts[0].replace('/', '..'), parts[2])
         if persistent_id == "":
             # self.finish(self._render())
             # self.redirect('/hub/shibboleth_login')
