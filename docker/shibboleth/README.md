@@ -1,0 +1,1 @@
+https://hub.docker.com/r/bitnik/nginx_shibboleth/
