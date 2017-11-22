@@ -1,6 +1,7 @@
 from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.utils import url_path_join
+from jupyterhub.handlers.login import LogoutHandler
 from traitlets import Unicode
 from tornado import web
 from jhub_remote_user_authenticator.remote_user_auth import RemoteUserLoginHandler, RemoteUserAuthenticator
@@ -31,6 +32,22 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
 
 
+class ShibbolethLogoutHandler(LogoutHandler):
+    """Log a user out by clearing their login cookie."""
+    def get(self):
+        user = self.get_current_user()
+        if user:
+            self.log.info("User logged out: %s", user.name)
+            self.clear_login_cookie()
+            self.statsd.incr('logout')
+        self.redirect(self.authenticator.shibboleth_logout_url)
+        # if self.authenticator.auto_login:
+        #     html = self.render_template('logout.html')
+        #     self.finish(html)
+        # else:
+        #     self.redirect(self.settings['login_url'], permanent=False)
+
+
 class ShibbolethAuthenticator(RemoteUserAuthenticator):
     eppn = Unicode(
         default_value='Eppn',
@@ -44,10 +61,15 @@ class ShibbolethAuthenticator(RemoteUserAuthenticator):
         default_value='persistent-id',
         config=True,
         help="""HTTP header to inspect for the authenticated persistent id.""")
+    shibboleth_logout_url = Unicode(
+        default_value='https://notebooks.gesis.org/Shibboleth.sso/Logout?return=https://idp.gesis.org/idp/profile/Logout',
+        config=True,
+        help="""Logout url from SP and IdP.""")
 
     def get_handlers(self, app):
         return [
             (r'/login', ShibbolethLoginHandler),
+            (r'/logout', ShibbolethLogoutHandler),
         ]
 
 
