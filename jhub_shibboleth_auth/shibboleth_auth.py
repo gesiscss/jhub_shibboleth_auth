@@ -1,3 +1,4 @@
+from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.utils import url_path_join
 from traitlets import Unicode
@@ -18,15 +19,14 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        parts = persistent_id.split('!')
-        persistent_id = '{}!{}'.format(parts[0].replace('/', '..'), parts[2])
         if persistent_id == "":
             # self.finish(self._render())
             # self.redirect('/hub/shibboleth_login')
             raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
         else:
             # Get User for username, creating if it doesn't exist
-            user = self.user_from_username(persistent_id)
+            user_hash = md5(persistent_id.encode()).hexdigest()
+            user = self.user_from_username(user_hash)
             self.set_login_cookie(user)
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
 
