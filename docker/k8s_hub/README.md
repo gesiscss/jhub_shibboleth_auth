@@ -1,0 +1,1 @@
+https://hub.docker.com/r/bitnik/k8s-hub/
