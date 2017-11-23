@@ -3,17 +3,16 @@ version: '3'
 services:
 
     jhub:
-        image: bitnik/jhub:v0.1
+        image: bitnik/jupyterhub:v0.8.1
         deploy:
-          replicas: 3
+          replicas: 1
           restart_policy:
               condition: on-failure
           resources:
               limits:
-                  cpus: "0.5"
-                  memory: 10G
+                  cpus: "0.2"
+                  memory: 512M
         restart: always
-        command: start-jhub.sh 'jupyterhub_config_docker.py'
         expose:
             - "8000"
         networks:
@@ -24,13 +23,13 @@ services:
             - jhub
         image: bitnik/nginx_shibboleth:v0.1
         deploy:
-          replicas: 2
+          replicas: 1
           restart_policy:
               condition: on-failure
           resources:
               limits:
                   cpus: "0.2"
-                  memory: 1G
+                  memory: 512M
         volumes:
             - /etc/shibboleth:/etc/shibboleth
             - ~/ilcm/shibboleth/embedded_discovery_service:/home/shibboleth/embedded_discovery_service
