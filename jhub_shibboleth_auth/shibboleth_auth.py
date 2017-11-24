@@ -61,9 +61,9 @@ class ShibbolethAuthenticator(RemoteUserAuthenticator):
         config=True,
         help="""HTTP header to inspect for the authenticated persistent id.""")
     shibboleth_logout_url = Unicode(
-        default_value='https://notebooks.gesis.org/Shibboleth.sso/Logout?return=https://idp.gesis.org/idp/profile/Logout',
+        default_value='',
         config=True,
-        help="""Logout url from SP and IdP.""")
+        help="""Logout url from shibboleth.""")
 
     def get_handlers(self, app):
         return [
