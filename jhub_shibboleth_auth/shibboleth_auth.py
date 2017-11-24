@@ -1,6 +1,5 @@
 from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
-from jupyterhub.utils import url_path_join
 from jupyterhub.handlers.login import LogoutHandler
 from traitlets import Unicode
 from tornado import web
@@ -29,7 +28,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
             user_hash = md5(persistent_id.encode()).hexdigest()
             user = self.user_from_username(user_hash)
             self.set_login_cookie(user)
-            self.redirect(url_path_join(self.hub.server.base_url, 'hub/'))
+            self.redirect(self.get_next_url(user), permanent=False)
 
 
 class ShibbolethLogoutHandler(LogoutHandler):
