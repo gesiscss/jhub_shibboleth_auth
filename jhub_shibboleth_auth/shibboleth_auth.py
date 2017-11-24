@@ -29,7 +29,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
             user_hash = md5(persistent_id.encode()).hexdigest()
             user = self.user_from_username(user_hash)
             self.set_login_cookie(user)
-            self.redirect(self.hub.hub_prefix)
+            self.redirect(self.hub.server.hub_prefix)
 
 
 class ShibbolethLogoutHandler(LogoutHandler):
