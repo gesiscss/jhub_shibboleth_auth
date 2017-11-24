@@ -29,7 +29,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
             user_hash = md5(persistent_id.encode()).hexdigest()
             user = self.user_from_username(user_hash)
             self.set_login_cookie(user)
-            self.redirect(url_path_join(self.hub.server.base_url, 'home'))
+            self.redirect(url_path_join(self.hub.server.base_url, 'hub'))
 
 
 class ShibbolethLogoutHandler(LogoutHandler):
@@ -80,3 +80,6 @@ class ShibbolethLocalAuthenticator(ShibbolethAuthenticator, LocalAuthenticator):
         name = user.name
         notebooks_folder = '/home/{}/notebooks'.format(name)
         add_system_user(name, notebooks_folder)
+
+
+
