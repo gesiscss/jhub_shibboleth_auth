@@ -10,8 +10,8 @@ from jhub_shibboleth_auth.utils import add_system_user
 
 class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
-    def get(self):
-        print('HEADERS:', self.request.headers)
+    def _get_username_from_request(self):
+        # print('HEADERS:', self.request.headers)
         # eppn = self.request.headers.get(self.authenticator.eppn, "")
         # email_addres = self.request.headers.get(self.authenticator.email, "")
         persistent_id = self.request.headers.get(self.authenticator.persistent_id, "")
@@ -19,14 +19,16 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        if persistent_id == "":
-            # self.finish(self._render())
-            # self.redirect('/hub/shibboleth_login')
+        user_hash = None if persistent_id == "" else md5(persistent_id.encode()).hexdigest()
+        return user_hash
+
+    def get(self):
+        username = self._get_username_from_request()
+        if username is None:
             raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
         else:
             # Get User for username, creating if it doesn't exist
-            user_hash = md5(persistent_id.encode()).hexdigest()
-            user = self.user_from_username(user_hash)
+            user = self.user_from_username(username)
             self.set_login_cookie(user)
             self.redirect(self.get_next_url(user), permanent=False)
 
