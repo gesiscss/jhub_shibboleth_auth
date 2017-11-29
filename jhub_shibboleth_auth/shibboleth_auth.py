@@ -2,7 +2,7 @@ from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers.login import LogoutHandler
 from traitlets import Unicode, List, validate, TraitError
-from tornado import web
+from tornado import web, gen
 from jhub_remote_user_authenticator.remote_user_auth import RemoteUserLoginHandler, RemoteUserAuthenticator
 
 from jhub_shibboleth_auth.utils import add_system_user
@@ -23,6 +23,18 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
                 user_data['name'] = None if user_data[header] == "" else md5(user_data[header].encode()).hexdigest()
         return user_data
 
+    @gen.coroutine
+    def _save_auth_state(self, user, auth_state):
+        """taken from handlers/base.py login_user() method"""
+        # always set auth_state and commit,
+        # because there could be key-rotation or clearing of previous values
+        # going on.
+        if not self.authenticator.enable_auth_state:
+            # auth_state is not enabled. Force None.
+            auth_state = None
+        yield user.save_auth_state(auth_state)
+        self.db.commit()
+
     def get(self):
         user_data = self._get_user_data_from_request()
         username = user_data['name']
@@ -31,19 +43,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         else:
             # Get User for username, creating if it doesn't exist
             user = self.user_from_username(username)
-
-            # taken from handlers/base.py login_user() method
-            #####
-            # always set auth_state and commit,
-            # because there could be key-rotation or clearing of previous values
-            # going on.
-            if not self.authenticator.enable_auth_state:
-                # auth_state is not enabled. Force None.
-                user_data = None
-            yield user.save_auth_state(user_data)
-            self.db.commit()
-            #######
-
+            self._save_auth_state(user, user_data)
             self.set_login_cookie(user)
             self.log.info("User logged in: %s", username)
             # print(user.get_auth_state())  # user.py
