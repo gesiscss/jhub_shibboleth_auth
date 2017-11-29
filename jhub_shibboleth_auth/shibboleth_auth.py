@@ -1,7 +1,7 @@
 from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers.login import LogoutHandler
-from traitlets import Unicode
+from traitlets import Unicode, List, validate, TraitError
 from tornado import web
 from jhub_remote_user_authenticator.remote_user_auth import RemoteUserLoginHandler, RemoteUserAuthenticator
 
@@ -10,25 +10,26 @@ from jhub_shibboleth_auth.utils import add_system_user
 
 class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
-    def _get_username_from_request(self):
+    def _get_user_data_from_request(self):
         # print('HEADERS:', self.request.headers)
-        # eppn = self.request.headers.get(self.authenticator.eppn, "")
-        # email_addres = self.request.headers.get(self.authenticator.email, "")
-        persistent_id = self.request.headers.get(self.authenticator.persistent_id, "")
         # NOTE: The Persistent ID is a triple with the format:
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        user_hash = None if persistent_id == "" else md5(persistent_id.encode()).hexdigest()
-        return user_hash
+        user_data = {}
+        for header in self.authenticator.headers:
+            user_data[header] = self.request.headers.get(header, "")
+            if header == 'persistent-id':
+                user_data['name'] = None if user_data[header] == "" else md5(user_data[header].encode()).hexdigest()
+        return user_data
 
     def get(self):
-        username = self._get_username_from_request()
-        if username is None:
+        user_data = self._get_user_data_from_request()
+        if user_data['name'] is None:
             raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
         else:
             # Get User for username, creating if it doesn't exist
-            user = self.user_from_username(username)
+            user = self.user_from_username(user_data['name'])
             self.set_login_cookie(user)
             self.redirect(self.get_next_url(user), permanent=False)
 
@@ -50,22 +51,22 @@ class ShibbolethLogoutHandler(LogoutHandler):
 
 
 class ShibbolethAuthenticator(RemoteUserAuthenticator):
-    eppn = Unicode(
-        default_value='Eppn',
+    headers = List(
+        default_value=['persistent-id', 'mail', 'Eppn'],
         config=True,
-        help="""HTTP header to inspect for the authenticated EPPN.""")
-    email = Unicode(
-        default_value='mail',
-        config=True,
-        help="""HTTP header to inspect for the authenticated email.""")
-    persistent_id = Unicode(
-        default_value='persistent-id',
-        config=True,
-        help="""HTTP header to inspect for the authenticated persistent id.""")
+        help="""List of HTTP headers to get user data. 
+        This must contain persistent-id, because it is used to create unique user name."""
+    )
     shibboleth_logout_url = Unicode(
         default_value='',
         config=True,
-        help="""Logout url from shibboleth.""")
+        help="""Url to logout from shibboleth SP.""")
+
+    @validate('headers')
+    def _valid_headers(self, proposal):
+        if 'persistent-id' not in proposal['value']:
+            raise TraitError('Headers should contain "persistent-id"')
+        return proposal['value']
 
     def get_handlers(self, app):
         return [
@@ -81,6 +82,3 @@ class ShibbolethLocalAuthenticator(ShibbolethAuthenticator, LocalAuthenticator):
         name = user.name
         notebooks_folder = '/home/{}/notebooks'.format(name)
         add_system_user(name, notebooks_folder)
-
-
-
