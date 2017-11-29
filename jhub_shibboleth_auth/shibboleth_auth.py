@@ -25,12 +25,28 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
     def get(self):
         user_data = self._get_user_data_from_request()
-        if user_data['name'] is None:
+        username = user_data['name']
+        if username is None:
             raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
         else:
             # Get User for username, creating if it doesn't exist
-            user = self.user_from_username(user_data['name'])
+            user = self.user_from_username(username)
+
+            # taken from handlers/base.py login_user() method
+            #####
+            # always set auth_state and commit,
+            # because there could be key-rotation or clearing of previous values
+            # going on.
+            if not self.authenticator.enable_auth_state:
+                # auth_state is not enabled. Force None.
+                user_data = None
+            yield user.save_auth_state(user_data)
+            self.db.commit()
+            #######
+
             self.set_login_cookie(user)
+            self.log.info("User logged in: %s", username)
+            # print(user.get_auth_state())  # user.py
             self.redirect(self.get_next_url(user), permanent=False)
 
 
