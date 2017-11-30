@@ -16,11 +16,9 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        user_data = {}
-        for header in self.authenticator.headers:
-            user_data[header] = self.request.headers.get(header, "")
-            if header == 'persistent-id':
-                user_data['name'] = None if user_data[header] == "" else md5(user_data[header].encode()).hexdigest()
+        user_data = {header: self.request.headers.get(header, "") for header in self.authenticator.headers}
+        if user_data.get('persistent-id'):
+            user_data['jh_name'] = md5(user_data['persistent-id'].encode()).hexdigest()
         return user_data
 
     @gen.coroutine
@@ -37,7 +35,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
     def get(self):
         user_data = self._get_user_data_from_request()
-        username = user_data['name']
+        username = user_data.get('jh_name')
         if username is None:
             raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
         else:
