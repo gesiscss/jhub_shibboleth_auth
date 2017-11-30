@@ -1,6 +1,7 @@
 from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers.login import LogoutHandler
+from jupyterhub.crypto import decrypt
 from traitlets import Unicode, List, validate, TraitError
 from tornado import web, gen
 from jhub_remote_user_authenticator.remote_user_auth import RemoteUserLoginHandler, RemoteUserAuthenticator
@@ -9,6 +10,11 @@ from jhub_shibboleth_auth.utils import add_system_user
 
 
 class ShibbolethLoginHandler(RemoteUserLoginHandler):
+
+    def __init__(self, *args, **kwargs):
+        super(ShibbolethLoginHandler, self).__init__(*args, **kwargs)
+        # TODO better solution
+        self.settings['jinja2_env'].filters['decrypt'] = decrypt
 
     def _get_user_data_from_request(self):
         # print('HEADERS:', self.request.headers)
