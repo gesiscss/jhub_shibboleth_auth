@@ -14,6 +14,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
     def __init__(self, *args, **kwargs):
         super(ShibbolethLoginHandler, self).__init__(*args, **kwargs)
         # TODO better solution
+        # add decryption filter to templates
         self.settings['jinja2_env'].filters['decrypt'] = decrypt
 
     def _get_user_data_from_request(self):
