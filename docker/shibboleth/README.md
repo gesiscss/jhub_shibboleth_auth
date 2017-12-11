@@ -20,6 +20,7 @@ Example command:
 sudo docker run -it --rm \
     -v path/to/shibboleth:/etc/shibboleth \
     -v path/to/shibboleth_nginx.conf:/etc/nginx/conf.d/shibboleth_nginx.conf \
+    -v path/to/embedded_discovery_service:/home/shibboleth/embedded_discovery_service \
     -v /etc/letsencrypt:/etc/letsencrypt \
     -v /etc/ssl:/etc/ssl \
     -p 80:80 \
@@ -28,3 +29,5 @@ sudo docker run -it --rm \
 ```
 
 Check [example-docker.compose.yaml](https://github.com/gesiscss/jhub_shibboleth_auth/blob/master/docker/shibboleth/example-docker-compose.yaml) to see how to run JupyterHub with Shibboleth login in docker containers in swarm mode. It will create 3 containers: `jhub`, `nginx-shibboleth` and docker `visualizer`.
+
+Shibboleth embedded discovery service: https://wiki.shibboleth.net/confluence/display/EDS10/1.+Overview
