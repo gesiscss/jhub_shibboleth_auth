@@ -11,19 +11,15 @@ from jhub_shibboleth_auth.utils import add_system_user
 
 class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
-    def __init__(self, *args, **kwargs):
-        super(ShibbolethLoginHandler, self).__init__(*args, **kwargs)
-        # TODO better solution
-        # add decryption filter to templates
-        self.settings['jinja2_env'].filters['decrypt'] = decrypt
-
     def _get_user_data_from_request(self):
         # print('HEADERS:', self.request.headers)
         # NOTE: The Persistent ID is a triple with the format:
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        user_data = {header: self.request.headers.get(header, "") for header in self.authenticator.headers}
+        user_data = {header: self.request.headers.get(header, "")
+                     for header in self.authenticator.headers
+                     if self.request.headers.get(header, "")}
         if user_data.get('persistent-id'):
             user_data['jh_name'] = md5(user_data['persistent-id'].encode()).hexdigest()
         return user_data
@@ -49,6 +45,9 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
             # Get User for username, creating if it doesn't exist
             user = self.user_from_username(username)
             self._save_auth_state(user, user_data)
+            # TODO better solution
+            # add decryption filter into templates
+            self.settings['jinja2_env'].filters['decrypt'] = decrypt
             self.set_login_cookie(user)
             self.log.info("User logged in: %s", username)
             # print(user.get_auth_state())  # user.py
