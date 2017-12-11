@@ -12,6 +12,8 @@ services:
               limits:
                   cpus: "0.2"
                   memory: 512M
+        volumes:
+            - path/to/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
         restart: always
         expose:
             - "8000"
@@ -31,12 +33,16 @@ services:
                   cpus: "0.2"
                   memory: 512M
         volumes:
-            - /etc/shibboleth:/etc/shibboleth
-            - ~/ilcm/shibboleth/embedded_discovery_service:/home/shibboleth/embedded_discovery_service
-            - /etc/nginx/conf.d/jhub_nginx_test_docker.conf:/etc/nginx/conf.d/jhub_nginx_test_docker.conf
+            # add Shibboleth configuration
+            - path/to/shibboleth:/etc/shibboleth
+            # add nginx configuration
+            - path/to/shibboleth_nginx.conf:/etc/nginx/conf.d/shibboleth_nginx.conf
+            # below here depends on your project requirements
+            # if you want to use shibboleth eds
+            - path/to/embedded_discovery_service:/home/shibboleth/embedded_discovery_service
+            # if you want to use letsencrypt to enable https
             - /etc/letsencrypt:/etc/letsencrypt
             - /etc/ssl:/etc/ssl
-            - /etc/nginx/.htpasswd:/etc/nginx/.htpasswd
         ports:
             - "80:80"
             - "443:443"
