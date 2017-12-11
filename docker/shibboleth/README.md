@@ -27,4 +27,4 @@ sudo docker run -it --rm \
     nginx_shibboleth /bin/bash  -c "$(cat ./start-supervisor.sh)"
 ```
 
-Check [example-docker.compose.yaml](TODO) to see how to run JupyterHub with Shibboleth login in docker containers in swarm mode. It will create 3 containers: `jhub`, `nginx-shibboleth` and docker `visualizer`.
+Check [example-docker.compose.yaml](https://github.com/gesiscss/jhub_shibboleth_auth/blob/master/docker/shibboleth/example-docker-compose.yaml) to see how to run JupyterHub with Shibboleth login in docker containers in swarm mode. It will create 3 containers: `jhub`, `nginx-shibboleth` and docker `visualizer`.
