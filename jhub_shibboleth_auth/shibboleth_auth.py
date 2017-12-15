@@ -11,40 +11,14 @@ from jhub_shibboleth_auth.utils import add_system_user
 
 class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
-    def _get_user_data_from_request(self):
-        # print('HEADERS:', self.request.headers)
-        # NOTE: The Persistent ID is a triple with the format:
-        # <name for the source of the identifier>!
-        # <name for the intended audience of the identifier >!
-        # <opaque identifier for the principal >
-        user_data = {header: self.request.headers.get(header, "")
-                     for header in self.authenticator.headers
-                     if self.request.headers.get(header, "")}
-        if user_data.get('persistent-id'):
-            user_data['jh_name'] = md5(user_data['persistent-id'].encode()).hexdigest()
-        return user_data
-
-    @gen.coroutine
-    def _save_auth_state(self, user, auth_state):
-        """taken from handlers/base.py login_user() method"""
-        # always set auth_state and commit,
-        # because there could be key-rotation or clearing of previous values
-        # going on.
-        if not self.authenticator.enable_auth_state:
-            # auth_state is not enabled. Force None.
-            auth_state = None
-        yield user.save_auth_state(auth_state)
-        self.db.commit()
-
     def get(self):
-        user_data = self._get_user_data_from_request()
         # display info for test purpose
         custom_html = """
                     <div class="service-login">
                     Testing, no login is possible.<br>
                     {}
                     </div>
-                    """.format(user_data)
+                    """.format(self.request.headers)
         self.finish(self._render(custom_html=custom_html))
         return
 
