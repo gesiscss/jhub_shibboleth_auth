@@ -1,7 +1,7 @@
 from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers.login import LogoutHandler
-from jupyterhub.crypto import decrypt
+from jupyterhub.handlers import url_escape, url_concat
 from traitlets import Unicode, List, validate, TraitError
 from tornado import web, gen
 from jhub_remote_user_authenticator.remote_user_auth import RemoteUserLoginHandler, RemoteUserAuthenticator
@@ -38,20 +38,28 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
 
     def get(self):
         user_data = self._get_user_data_from_request()
-        username = user_data.get('jh_name')
-        if username is None:
-            raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
-        else:
-            # Get User for username, creating if it doesn't exist
-            user = self.user_from_username(username)
-            self._save_auth_state(user, user_data)
-            # TODO better solution
-            # add decryption filter into templates
-            self.settings['jinja2_env'].filters['decrypt'] = decrypt
-            self.set_login_cookie(user)
-            self.log.info("User logged in: %s", username)
-            # print(user.get_auth_state())  # user.py
-            self.redirect(self.get_next_url(user), permanent=False)
+        # display info for test purpose
+        custom_html = """
+                    <div class="service-login">
+                    Testing, no login is possible.<br>
+                    {}
+                    </div>
+                    """.format(user_data)
+        self.finish(self._render(custom_html=custom_html))
+        return
+
+    def _render(self, login_error=None, username=None, custom_html=None):
+        return self.render_template('login.html',
+                                    next=url_escape(self.get_argument('next', default='')),
+                                    username=username,
+                                    login_error=login_error,
+                                    custom_html=custom_html,
+                                    login_url=self.settings['login_url'],
+                                    authenticator_login_url=url_concat(
+                                        self.authenticator.login_url(self.hub.base_url),
+                                        {'next': self.get_argument('next', '')},
+                                    ),
+                                    )
 
 
 class ShibbolethLogoutHandler(LogoutHandler):
