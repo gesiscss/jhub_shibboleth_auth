@@ -18,7 +18,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
                     Testing, no login is possible.<br>
                     {}
                     </div>
-                    """.format(self.request.headers)
+                    """.format('<br>'.join('{}: {}'.format(k, v) for k, v in self.request.headers.items()))
         self.finish(self._render(custom_html=custom_html))
         return
 
