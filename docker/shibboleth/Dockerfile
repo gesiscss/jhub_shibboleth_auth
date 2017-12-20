@@ -21,8 +21,8 @@ RUN apt-get update && \
     fakeroot \
     supervisor \
     libshibsp-plugins \
-    shibboleth-sp2-common \
-    shibboleth-sp2-utils && \
+    shibboleth-sp2-common=2.6.* \
+    shibboleth-sp2-utils=2.6.* && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
