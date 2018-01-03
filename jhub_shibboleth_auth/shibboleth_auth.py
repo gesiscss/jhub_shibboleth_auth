@@ -20,8 +20,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         user_data = {header: self.request.headers.get(header, "")
                      for header in self.authenticator.headers
                      if self.request.headers.get(header, "")}
-        if user_data.get('persistent-id'):
-            user_data['jh_name'] = md5(user_data['persistent-id'].encode()).hexdigest()
+        user_data['jh_name'] = self.request.headers.get(self.authenticator.headers[0])
         return user_data
 
     @gen.coroutine
@@ -72,10 +71,9 @@ class ShibbolethLogoutHandler(LogoutHandler):
 
 class ShibbolethAuthenticator(RemoteUserAuthenticator):
     headers = List(
-        default_value=['persistent-id', 'mail', 'Eppn'],
+        default_value=['mail', 'Eppn', 'cn', 'Givenname', 'sn'],
         config=True,
-        help="""List of HTTP headers to get user data. 
-        This must contain persistent-id, because it is used to create unique user name."""
+        help="""List of HTTP headers to get user data. First item is used as unique user name."""
     )
     shibboleth_logout_url = Unicode(
         default_value='',
@@ -84,8 +82,8 @@ class ShibbolethAuthenticator(RemoteUserAuthenticator):
 
     @validate('headers')
     def _valid_headers(self, proposal):
-        if 'persistent-id' not in proposal['value']:
-            raise TraitError('Headers should contain "persistent-id"')
+        if not proposal['value']:
+            raise TraitError('Headers should contain at least 1 item.')
         return proposal['value']
 
     def get_handlers(self, app):
