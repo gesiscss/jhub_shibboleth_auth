@@ -17,10 +17,19 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        user_data = {header: self.request.headers.get(header, "")
-                     for header in self.authenticator.headers
-                     if self.request.headers.get(header, "")}
-        user_data['jh_name'] = self.request.headers.get(self.authenticator.headers[0])
+        user_data = {}
+        for i, header in enumerate(self.authenticator.headers):
+            value = self.request.headers.get(header, "")
+            if value:
+                try:
+                    # sometimes header value is in latin-1 encoding
+                    # TODO what causes this? fix encoding in there
+                    value = value.encode('latin-1').decode('utf-8')
+                except UnicodeDecodeError:
+                    pass
+                user_data[header] = value
+                if i == 0:
+                    user_data['jh_name'] = value
         return user_data
 
     @gen.coroutine
