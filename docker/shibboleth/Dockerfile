@@ -11,10 +11,6 @@ USER root
 # install packages for shibboleth
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get -yq dist-upgrade -y && \
-    apt-get autoremove -y && \
-    apt-get autoclean -y && \
     apt-get install -yq --no-install-recommends \
     apt-utils \
     build-essential \
