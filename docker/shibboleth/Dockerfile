@@ -31,15 +31,16 @@ RUN apt-mark hold nginx && \
     rm -rf /var/lib/apt/lists/*
 
 # install Shibboleth
-# https://www.switch.ch/aai/guides/sp/installation/?os=ubuntu
+# https://www.switch.ch/aai/guides/sp/installation/?os=debian
 RUN curl -O http://pkg.switch.ch/switchaai/SWITCHaai-swdistrib.asc && \
     apt-key add SWITCHaai-swdistrib.asc && \
-    echo 'deb http://pkg.switch.ch/switchaai/ubuntu xenial main' | tee /etc/apt/sources.list.d/SWITCHaai-swdistrib.list > /dev/null && \
+    echo 'deb http://pkg.switch.ch/switchaai/debian stretch main' | tee /etc/apt/sources.list.d/SWITCHaai-swdistrib.list > /dev/null > /dev/null && \
     apt-get update && \
     apt-get install --install-recommends shibboleth -yq && \
     apt-get upgrade -y && \
     apt-get autoremove -y && \
-    apt-get autoclean -y
+    apt-get autoclean -y && \
+    rm -f SWITCHaai-swdistrib.asc
 
 #RUN gpg --with-fingerprint  SWITCHaai-swdistrib.asc
 
