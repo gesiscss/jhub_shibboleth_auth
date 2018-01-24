@@ -6,7 +6,7 @@ Link to docker hub: https://hub.docker.com/r/bitnik/nginx_shibboleth/
 
 - OS: Debian 9 (stretch)
 - nginx:1.13.6
-- Shibboleth SP: 2.6
+- Shibboleth SP: 2.6.1
 
 ## Sources
 

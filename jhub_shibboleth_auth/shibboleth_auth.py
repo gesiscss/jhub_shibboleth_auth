@@ -1,4 +1,3 @@
-from hashlib import md5
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers.login import LogoutHandler
 from jupyterhub.crypto import decrypt

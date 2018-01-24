@@ -4,23 +4,44 @@
 # https://github.com/nginxinc/docker-nginx/blob/master/stable/stretch/Dockerfile
 FROM nginx:1.13.6
 
-MAINTAINER iLCM Project <kenan.erdogan@gesis.org>
+# https://docs.docker.com/engine/reference/builder/#label
+LABEL maintainer="kenan.erdogan@gesis.org"
 
 USER root
 
 # install packages for shibboleth
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
+RUN apt-mark hold nginx && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get -yq dist-upgrade -y && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y && \
     apt-get install -yq --no-install-recommends \
     apt-utils \
     build-essential \
     fakeroot \
     supervisor \
     libshibsp-plugins \
-    shibboleth-sp2-common=2.6.* \
-    shibboleth-sp2-utils=2.6.* && \
+#    shibboleth-sp2-common=2.6.* \
+#    shibboleth-sp2-utils=2.6.* && \
+    gpg \
+    curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# install Shibboleth
+# https://www.switch.ch/aai/guides/sp/installation/?os=ubuntu
+RUN curl -O http://pkg.switch.ch/switchaai/SWITCHaai-swdistrib.asc && \
+    apt-key add SWITCHaai-swdistrib.asc && \
+    echo 'deb http://pkg.switch.ch/switchaai/ubuntu xenial main' | tee /etc/apt/sources.list.d/SWITCHaai-swdistrib.list > /dev/null && \
+    apt-get update && \
+    apt-get install --install-recommends shibboleth -yq && \
+    apt-get upgrade -y && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y
+
+#RUN gpg --with-fingerprint  SWITCHaai-swdistrib.asc
 
 # nginx packages for Shibboleth FastCGI
 # https://github.com/nginx-shib/nginx-http-shibboleth
