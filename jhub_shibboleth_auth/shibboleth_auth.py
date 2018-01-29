@@ -69,7 +69,7 @@ class ShibbolethLogoutHandler(LogoutHandler):
             self.log.info("User logged out: %s", user.name)
             self.clear_login_cookie()
             self.statsd.incr('logout')
-        self.redirect(self.authenticator.shibboleth_logout_url)
+        self.redirect(self.authenticator.shibboleth_logout_url, permanent=False)
         # if self.authenticator.auto_login:
         #     html = self.render_template('logout.html')
         #     self.finish(html)

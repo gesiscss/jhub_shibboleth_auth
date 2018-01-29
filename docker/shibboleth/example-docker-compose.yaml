@@ -3,7 +3,7 @@ version: '3'
 services:
 
     jhub:
-        image: bitnik/jupyterhub:v0.8.1
+        image: gesiscss/jupyterhub-jsa:v0.8.1
         deploy:
           replicas: 1
           restart_policy:
@@ -23,7 +23,7 @@ services:
     nginx-shibboleth:
         depends_on:
             - jhub
-        image: bitnik/nginx_shibboleth:v0.1
+        image: gesiscss/nginx-shibboleth:v0.2.2
         deploy:
           replicas: 1
           restart_policy:

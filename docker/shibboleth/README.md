@@ -1,6 +1,6 @@
 This docker file is to run Shibboleth SP and nginx FastCGI in a docker container.
 
-Link to docker hub: https://hub.docker.com/r/bitnik/nginx_shibboleth/
+Link to docker hub: https://hub.docker.com/r/gesiscss/nginx-shibboleth/
 
 ## Versions
 
@@ -24,7 +24,7 @@ sudo docker run -it --rm \
     -v /etc/ssl:/etc/ssl \
     -p 80:80 \
     -p 443:443 \
-    nginx_shibboleth /bin/bash  -c "/usr/bin/supervisord --nodaemon --configuration /etc/supervisor/supervisord.conf"
+    gesiscss/nginx-shibboleth /bin/bash  -c "/usr/bin/supervisord --nodaemon --configuration /etc/supervisor/supervisord.conf"
 ```
 
 Check [example-docker.compose.yaml](https://github.com/gesiscss/jhub_shibboleth_auth/blob/master/docker/shibboleth/example-docker-compose.yaml) to see how to run JupyterHub with Shibboleth login in docker containers in swarm mode. It will create 3 containers: `jhub`, `nginx-shibboleth` and docker `visualizer`.

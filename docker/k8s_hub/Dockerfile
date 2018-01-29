@@ -1,4 +1,4 @@
-# https://github.com/jupyterhub/zero-to-jupyterhub-k8s/tree/e9673caac14bac72007afe91f2808679b81f1b20/images/hub
+# https://github.com/jupyterhub/zero-to-jupyterhub-k8s/tree/v0.5/images/hub
 FROM jupyterhub/k8s-hub:v0.5.0
 
 # https://github.com/gesiscss/jhub_shibboleth_auth
