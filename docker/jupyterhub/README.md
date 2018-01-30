@@ -1,6 +1,6 @@
 This docker file extends [JupyterHub's docker file](https://github.com/jupyterhub/jupyterhub/blob/master/Dockerfile) with installation of `jhub_shibboleth_auth`.
 
-Link to docker hub: https://hub.docker.com/r/gesiscss/jupyterhub/
+Link to docker hub: https://hub.docker.com/r/gesiscss/jupyterhub-jsa/
 
 ## How to run this docker image
 
