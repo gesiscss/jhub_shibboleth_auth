@@ -15,19 +15,10 @@ class ShibbolethLoginHandler(BaseHandler):
         # <name for the source of the identifier>!
         # <name for the intended audience of the identifier >!
         # <opaque identifier for the principal >
-        user_data = {}
-        for i, header in enumerate(self.authenticator.headers):
-            value = self.request.headers.get(header, "")
-            if value:
-                try:
-                    # sometimes header value is in latin-1 encoding
-                    # TODO what causes this? fix encoding in there
-                    value = value.encode('latin-1').decode('utf-8')
-                except UnicodeDecodeError:
-                    pass
-                user_data[header] = value
-                if i == 0:
-                    user_data['jh_name'] = value
+        import uuid
+        user_data = {header: '{}-ö-ü-ä'.format(uuid.uuid4().hex)
+                     for header in self.authenticator.headers}
+        user_data['jh_name'] = user_data[self.authenticator.headers[0]]
         return user_data
 
     async def get(self):
@@ -82,6 +73,7 @@ class ShibbolethAuthenticator(Authenticator):
         """
         user_data = {
             'name': data['jh_name'],
+            'admin': True,
             'auth_state': data
         }
         return user_data
