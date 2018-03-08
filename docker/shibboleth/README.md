@@ -32,4 +32,5 @@ Check [example-docker.compose.yaml](https://github.com/gesiscss/jhub_shibboleth_
 ## Notes
 
 - https://shibboleth.net/community/advisories/secadv_20180112.txt
+- https://shibboleth.net/community/advisories/secadv_20180227.txt
   - `sudo docker build -t nginx-shibboleth . --no-cache`: docker image is recreated with upgraded shibboleth packages.
