@@ -38,7 +38,6 @@ RUN curl -O http://pkg.switch.ch/switchaai/SWITCHaai-swdistrib.asc && \
     echo 'deb http://pkg.switch.ch/switchaai/debian stretch main' | tee /etc/apt/sources.list.d/SWITCHaai-swdistrib.list > /dev/null && \
     apt-get update && \
     apt-get install --no-install-recommends shibboleth -yq && \
-    apt-get purge libsaml8 libshibsp6 libxmltooling6 shibboleth-schemas -y && \
     apt-get upgrade -y && \
     apt-get autoremove -y && \
     apt-get autoclean -y && \
