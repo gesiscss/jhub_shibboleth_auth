@@ -1,6 +1,7 @@
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers.login import LogoutHandler
 from jupyterhub.crypto import decrypt
+from jupyterhub.utils import url_path_join
 from urllib.parse import urlparse
 from traitlets import Unicode, List, validate, TraitError
 from tornado import web, gen
@@ -64,7 +65,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
     def get_next_url(self, user=None):
         """Get the next_url for login redirect
 
-        Defaults to hub base_url /hub/.
+        Defaults to hub home /hub/home.
         """
         next_url = self.get_argument('next', default='')
         if (next_url + '/').startswith('%s://%s/' % (self.request.protocol, self.request.host)):
@@ -73,7 +74,7 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
         if not next_url.startswith('/'):
             next_url = ''
         if not next_url:
-            next_url = self.hub.base_url
+            next_url = url_path_join(self.hub.base_url, 'home')
         return next_url
 
 
