@@ -4,7 +4,7 @@ Shibboleth authentication for JupyterHub.
 ## Installation
 
 ```
-pip install git+git://github.com/gesiscss/jhub_shibboleth_auth.git@master#egg=jhub_shibboleth_auth
+pip install jhub_shibboleth_auth
 ```
 
 ## Sources
