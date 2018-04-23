@@ -1,1 +1,2 @@
 jhub_remote_user_authenticator
+jupyterhub==0.8.1
