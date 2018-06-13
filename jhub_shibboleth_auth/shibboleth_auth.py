@@ -1,18 +1,16 @@
-from jupyterhub.auth import LocalAuthenticator
-from jupyterhub.handlers.login import LogoutHandler
+from jupyterhub.auth import Authenticator, LocalAuthenticator
+from jupyterhub.handlers import BaseHandler
 from jupyterhub.crypto import decrypt
-from jupyterhub.utils import url_path_join
-from urllib.parse import urlparse
 from traitlets import Unicode, List, validate, TraitError
-from tornado import web, gen
-from jhub_remote_user_authenticator.remote_user_auth import RemoteUserLoginHandler, RemoteUserAuthenticator
+from tornado import web
 
 from jhub_shibboleth_auth.utils import add_system_user
 
 
-class ShibbolethLoginHandler(RemoteUserLoginHandler):
+class ShibbolethLoginHandler(BaseHandler):
 
     def _get_user_data_from_request(self):
+        """Get shibboleth attributes (user data) from request headers."""
         # print('HEADERS:', self.request.headers)
         # NOTE: The Persistent ID is a triple with the format:
         # <name for the source of the identifier>!
@@ -33,68 +31,37 @@ class ShibbolethLoginHandler(RemoteUserLoginHandler):
                     user_data['jh_name'] = value
         return user_data
 
-    @gen.coroutine
-    def _save_auth_state(self, user, auth_state):
-        """taken from handlers/base.py login_user() method"""
-        # always set auth_state and commit,
-        # because there could be key-rotation or clearing of previous values
-        # going on.
-        if not self.authenticator.enable_auth_state:
-            # auth_state is not enabled. Force None.
-            auth_state = None
-        yield user.save_auth_state(auth_state)
-        self.db.commit()
-
-    def get(self):
+    async def get(self):
+        """Get user data and log user in."""
+        self.statsd.incr('login.request')
         user_data = self._get_user_data_from_request()
-        username = user_data.get('jh_name')
-        if username is None:
-            raise web.HTTPError(401)  # 401 Unauthorized or 403 Forbidden
+        if user_data.get('jh_name') is None:
+            raise web.HTTPError(403)
+
+        # TODO better solution
+        # add decryption filter into templates
+        self.settings['jinja2_env'].filters['decrypt'] = decrypt
+
+        user = await self.login_user(user_data)
+        if user is None:
+            raise web.HTTPError(403)
         else:
-            # Get User for username, creating if it doesn't exist
-            user = self.user_from_username(username)
-            self._save_auth_state(user, user_data)
-            # TODO better solution
-            # add decryption filter into templates
-            self.settings['jinja2_env'].filters['decrypt'] = decrypt
-            self.set_login_cookie(user)
-            self.log.info("User logged in: %s", username)
-            # print(user.get_auth_state())  # user.py
-            self.redirect(self.get_next_url(user), permanent=False)
-
-    def get_next_url(self, user=None):
-        """Get the next_url for login redirect
-
-        Defaults to hub home /hub/home.
-        """
-        next_url = self.get_argument('next', default='')
-        if (next_url + '/').startswith('%s://%s/' % (self.request.protocol, self.request.host)):
-            # treat absolute URLs for our host as absolute paths:
-            next_url = urlparse(next_url).path
-        if not next_url.startswith('/'):
-            next_url = ''
-        if not next_url:
-            next_url = url_path_join(self.hub.base_url, 'home')
-        return next_url
+            self.redirect(self.get_next_url(user))
 
 
-class ShibbolethLogoutHandler(LogoutHandler):
-    """Log a user out by clearing their login cookie."""
+class ShibbolethLogoutHandler(BaseHandler):
+    """Log a user out from JupyterHub by clearing their login cookie
+    and then redirect to shibboleth logout url to clear shibboleth cookie."""
     def get(self):
         user = self.get_current_user()
         if user:
             self.log.info("User logged out: %s", user.name)
             self.clear_login_cookie()
             self.statsd.incr('logout')
-        self.redirect(self.authenticator.shibboleth_logout_url, permanent=False)
-        # if self.authenticator.auto_login:
-        #     html = self.render_template('logout.html')
-        #     self.finish(html)
-        # else:
-        #     self.redirect(self.settings['login_url'], permanent=False)
+        self.redirect(self.authenticator.shibboleth_logout_url)
 
 
-class ShibbolethAuthenticator(RemoteUserAuthenticator):
+class ShibbolethAuthenticator(Authenticator):
     headers = List(
         default_value=['mail', 'Eppn', 'cn', 'Givenname', 'sn'],
         config=True,
@@ -110,6 +77,19 @@ class ShibbolethAuthenticator(RemoteUserAuthenticator):
         if not proposal['value']:
             raise TraitError('Headers should contain at least 1 item.')
         return proposal['value']
+
+    async def authenticate(self, handler, data):
+        """
+        :param handler: the current request handler (ShibbolethLoginHandler)
+        :param data: user data from request headers (shibboleth attributes)
+        :return: User data dict in a form that login_user method can process it.
+        'name' holds the username and 'auth_state' holds all data requested from shibboleth.
+        """
+        user_data = {
+            'name': data['jh_name'],
+            'auth_state': data
+        }
+        return user_data
 
     def get_handlers(self, app):
         return [
