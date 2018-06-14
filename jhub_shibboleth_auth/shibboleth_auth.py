@@ -1,6 +1,5 @@
 from jupyterhub.auth import Authenticator, LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
-from jupyterhub.crypto import decrypt
 from traitlets import Unicode, List, validate, TraitError
 from tornado import web
 
@@ -37,10 +36,6 @@ class ShibbolethLoginHandler(BaseHandler):
         user_data = self._get_user_data_from_request()
         if user_data.get('jh_name') is None:
             raise web.HTTPError(403)
-
-        # TODO better solution
-        # add decryption filter into templates
-        self.settings['jinja2_env'].filters['decrypt'] = decrypt
 
         user = await self.login_user(user_data)
         if user is None:
