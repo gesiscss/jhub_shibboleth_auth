@@ -12,6 +12,7 @@ hub:
   extraConfig: |
     c.Authenticator.shibboleth_logout_url = 'your Shibboleht logout url'
     c.Authenticator.enable_auth_state = True
+    c.JupyterHub.redirect_to_server = False
 auth:
   type: custom
   custom:
