@@ -1,4 +1,4 @@
-# https://github.com/jupyterhub/zero-to-jupyterhub-k8s/tree/578b3a285708be4de92990403dfd517c01e74a0f/images/hub
-FROM jupyterhub/k8s-hub:a3fab36
+# https://github.com/jupyterhub/zero-to-jupyterhub-k8s/tree/2ff9218360c7ae40786b36c95c1940367a4f4054/images/hub
+FROM jupyterhub/k8s-hub:c0157fc
 
 RUN pip3 install --no-cache-dir jhub_shibboleth_auth==1.2.0
