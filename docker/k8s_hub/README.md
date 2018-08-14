@@ -8,7 +8,7 @@ When you want to use `jhub_shibboleth_auth` in your JupyterHub on Kubernetes, yo
 hub:
   image:
     name: gesiscss/k8s-hub
-    tag: 578b3a2-v1.2.0
+    tag: ac54cf1-v1.3.0
   extraConfig: |
     c.Authenticator.shibboleth_logout_url = 'your Shibboleht logout url'
     c.Authenticator.enable_auth_state = True
