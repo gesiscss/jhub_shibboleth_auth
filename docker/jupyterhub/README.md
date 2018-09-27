@@ -35,13 +35,15 @@ c.Authenticator.shibboleth_logout_url = "your Shibboleht logout url"
 
 You can run the docker image with mounting `jupyterhub_config.py`:
 
-`docker run -it --rm -p 8000:8000 -v path/to/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py <image_name>`
+```bash
+docker run -it --rm -p 8000:8000 -v path/to/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py <image_name>
+```
 
 ### Second way
 
 You can extend this docker file and add your config file there:
 
-```
+```bash
 FROM gesiscss/jupyterhub:v0.8.1
 
 ADD jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
