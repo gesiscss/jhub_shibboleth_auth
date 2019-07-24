@@ -1,3 +1,5 @@
+**This repo is not maintained anymore.**
+
 # jhub_shibboleth_auth
 Shibboleth authentication for JupyterHub.
 
